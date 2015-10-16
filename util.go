@@ -8,13 +8,6 @@ import (
 	"strings"
 )
 
-type SourceFile struct {
-	Name    string // Short name of file
-	Path    string // Full path relative to the starting directory
-	Imports []string
-	Package string
-}
-
 func getImports(dir string) map[string][]string {
 	fset := token.NewFileSet()
 	files := getGoFiles(dir)
@@ -34,13 +27,6 @@ func getImports(dir string) map[string][]string {
 	}
 
 	return imps
-}
-
-/*
- * Populates the list of import paths for the specified file
- */
-func calculateImports(path string) {
-
 }
 
 func getGoFiles(dir string) []string {

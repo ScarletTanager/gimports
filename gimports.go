@@ -79,8 +79,6 @@ func main() {
 		pkgMatch = "\"" + os.Args[2] + "\""
 	}
 
-	fmt.Printf("Will match against %s\n", pkgMatch)
-
 	imps := make(map[string][]string)
 
 	dirlist := getGoDirs(dirname)
@@ -96,7 +94,7 @@ func main() {
 				continue
 			}
 		}
-		fmt.Printf("IMPORTERS OF %s:\n", p)
+		fmt.Printf("IMPORTERS OF %s (%d results):\n", p, len(fs))
 		for _, f := range fs {
 			fmt.Printf("\t%s\n", f)
 		}
