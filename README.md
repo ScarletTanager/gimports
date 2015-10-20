@@ -12,4 +12,14 @@ You would get output something like this:
 	../openssl/ssl/httpsclient.go
 	../webster/webster.go
 
-If you omit the package name, then `gimports` will report the imports for all files under the tree by package.	
+If you omit the package name, then `gimports` will report the imports for all files under the tree by package.
+
+For more detailed reporting, you can call `gimports -calls <dir> [<package>]` - this will trigger the per-file reporting of all function calls by package (or for the specific package if named on the command line):
+
+    IMPORTERS of net/http (2 results):
+    	../webster/webster.go
+    		Line: 25	http.Response
+    		Line: 76	http.Response
+    		Line: 84	http.Client
+    	../webster/webster_types.go
+    		Line: 9	http.Client
