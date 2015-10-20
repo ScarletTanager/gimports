@@ -107,7 +107,8 @@ func main() {
 
 	for _, pkg := range packages {
 		if pkgMatch != "" {
-			if pkg != pkgMatch {
+			prefix := strings.TrimSuffix(pkgMatch, "*")
+			if strings.HasPrefix(pkg, prefix) != true {
 				continue
 			}
 		}
