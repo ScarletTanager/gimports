@@ -1,11 +1,16 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sort"
 	"strings"
 )
+
+var showCalls bool // List calls into the target package?
+var debug bool
 
 /*
  * Add a dir to the list of dirs known to contain *.go files
@@ -68,35 +73,63 @@ func getGoDirs(dirname string) []string {
 	return dlist
 }
 
+func init() {
+	flag.BoolVar(&showCalls, "calls", false, "lists calls into the target package")
+	flag.BoolVar(&debug, "d", false, "enable debug mode")
+}
+
+/*
+ * MAIN
+ */
 func main() {
+	flag.Parse()
 	var pkgMatch string
-	if len(os.Args) < 2 {
-		fmt.Println("Usage: gimports <dirname> [<package>]")
+	dset := NewDepSet()
+	if len(flag.Args()) < 1 {
+		fmt.Println("Usage: gimports [-calls] <dirname> [<package>]")
 		os.Exit(1)
 	}
-	dirname := os.Args[1]
-	if len(os.Args) > 2 {
-		pkgMatch = "\"" + os.Args[2] + "\""
+	dirname := flag.Arg(0)
+	if len(flag.Args()) > 1 {
+		pkgMatch = flag.Arg(1)
 	}
 
-	imps := make(map[string][]string)
+	// imps := make(map[string][]PkgUse)
 
 	dirlist := getGoDirs(dirname)
+
 	for _, d := range dirlist {
-		for pkg, files := range getImports(d) {
-			imps[pkg] = append(imps[pkg], files...)
-		}
+		dset.Merge(getImports(d))
 	}
 
-	for p, fs := range imps {
+	// for p, fs := range imps {
+	var packages sort.StringSlice = dset.Packages()
+
+	for _, pkg := range packages {
 		if pkgMatch != "" {
-			if p != pkgMatch {
+			if pkg != pkgMatch {
 				continue
 			}
 		}
-		fmt.Printf("IMPORTERS OF %s (%d results):\n", p, len(fs))
-		for _, f := range fs {
-			fmt.Printf("\t%s\n", f)
+		deps := dset.Deps(pkg)
+		fmt.Printf("IMPORTERS of %s (%d results):\n", pkg, len(deps))
+		for _, dep := range deps {
+			fmt.Printf("\t%s\n", dep.File())
+			if showCalls {
+				for _, c := range dep.Calls() {
+					// locfields := strings.Split(fset.Position(c.Location).String(), ":")
+					fmt.Printf("\t\tLine: %d\t%s.%s\n",
+						// locfields[1],
+						c.Line,
+						c.Qual,
+						c.Sel)
+				}
+			}
 		}
 	}
+	// 	fmt.Printf("IMPORTERS OF %s (%d results):\n", p, len(fs))
+	// 	for _, f := range fs {
+	// 		fmt.Printf("\t%s\n", f)
+	// 	}
+	// }
 }
